@@ -63,7 +63,8 @@ static void ignore_print(int index, IGNORE_REC *rec)
 	}
 	if (rec->fullword) g_string_append(options, "-full ");
 	if (rec->replies) g_string_append(options, "-replies ");
-	if (rec->servertag != NULL) 
+	if (rec->print_noact) g_string_append(options, "-print_noact ");
+	if (rec->servertag != NULL)
 		g_string_append_printf(options, "-network %s ", rec->servertag);
 	if (rec->pattern != NULL)
 		g_string_append_printf(options, "-pattern %s ", rec->pattern);
@@ -135,7 +136,7 @@ static void cmd_ignore(const char *data)
 	/* Allow -ircnet for backwards compatibility */
 	if (!servertag)
 		servertag = g_hash_table_lookup(optlist, "ircnet");
-	
+
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
         if (*levels == '\0') levels = "ALL";
 
@@ -188,6 +189,7 @@ static void cmd_ignore(const char *data)
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
 	rec->fullword = g_hash_table_lookup(optlist, "full") != NULL;
 	rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
+	rec->print_noact = g_hash_table_lookup(optlist, "print_noact") != NULL;
 	if (msecs != 0)
 		rec->unignore_time = time(NULL)+msecs/1000;
 
@@ -262,7 +264,7 @@ void fe_ignore_init(void)
 	signal_add("ignore created", (SIGNAL_FUNC) sig_ignore_created);
 	signal_add("ignore changed", (SIGNAL_FUNC) sig_ignore_created);
 
-	command_set_options("ignore", "regexp full except replies -network -ircnet -time -pattern -channels");
+	command_set_options("ignore", "regexp full except replies -network -ircnet -time -pattern -channels print_noact");
 }
 
 void fe_ignore_deinit(void)
