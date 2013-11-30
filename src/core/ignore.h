@@ -20,6 +20,7 @@ struct _IGNORE_REC {
 	unsigned int regexp:1;
 	unsigned int fullword:1;
 	unsigned int replies:1; /* ignore replies to nick in channel */
+	unsigned int print_noact:1; //print with MSGLEVEL_NO_ACT rather than dropping
 #ifdef HAVE_REGEX_H
 	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
 	regex_t preg;
