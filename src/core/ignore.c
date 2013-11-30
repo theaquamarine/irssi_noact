@@ -182,6 +182,17 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 IGNORE_REC *ignore_find(const char *servertag, const char *mask,
 			char **channels)
 {
+	/* for compatability - four files including this reference here so could
+		update them & remove*/
+	IGNORE_REC *rec = NULL;
+
+	rec = ignore_find(servertag, mask, channels, NULL, NULL);
+	return (rec == NULL || !rec->nick) ? NULL : rec;
+}
+
+IGNORE_REC *ignore_find(const char *servertag, const char *mask,
+			char **channels, const char *msg, int level)
+{
 	GSList *tmp;
 	char **chan;
 	int ignore_servertag;

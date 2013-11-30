@@ -20,7 +20,7 @@ struct _IGNORE_REC {
 	unsigned int regexp:1;
 	unsigned int fullword:1;
 	unsigned int replies:1; /* ignore replies to nick in channel */
-	unsigned int print_noact:1; //print with MSGLEVEL_NO_ACT rather than dropping
+	unsigned int print_noact:1; /* print with MSGLEVEL_NO_ACT rather than dropping */
 #ifdef HAVE_REGEX_H
 	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
 	regex_t preg;
@@ -33,6 +33,9 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level);
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels);
+
+IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels,
+			const char *msg, int level);
 
 void ignore_add_rec(IGNORE_REC *rec);
 void ignore_update_rec(IGNORE_REC *rec);
