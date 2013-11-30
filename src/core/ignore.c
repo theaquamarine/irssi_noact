@@ -255,6 +255,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 	if (rec->regexp) iconfig_node_set_bool(node, "regexp", TRUE);
 	if (rec->fullword) iconfig_node_set_bool(node, "fullword", TRUE);
 	if (rec->replies) iconfig_node_set_bool(node, "replies", TRUE);
+	if (rec->print_noact) config_node_get_bool(node, "print_noact", TRUE);
 	if (rec->unignore_time != 0)
 		iconfig_node_set_int(node, "unignore_time", rec->unignore_time);
 	iconfig_node_set_str(node, "servertag", rec->servertag);
@@ -400,6 +401,7 @@ static void read_ignores(void)
 		rec->regexp = config_node_get_bool(node, "regexp", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
 		rec->replies = config_node_get_bool(node, "replies", FALSE);
+		rec->print_noact = config_node_get_bool(node, "print_noact", FALSE);
 		rec->unignore_time = config_node_get_int(node, "unignore_time", 0);
 		rec->servertag = g_strdup(config_node_get_str(node, "servertag", 0));
 
