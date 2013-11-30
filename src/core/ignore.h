@@ -34,7 +34,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels);
 
-IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels,
+IGNORE_REC *ignore_find_nick(const char *servertag, const char *mask, char **channels,
 			const char *msg, int level);
 
 void ignore_add_rec(IGNORE_REC *rec);
