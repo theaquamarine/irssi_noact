@@ -199,21 +199,27 @@ IGNORE_REC *ignore_find_nick(const char *servertag, const char *mask,
 	GSList *tmp;
 	char **chan;
 	int ignore_servertag;
+	SERVER_REC *server;
 
 	if (mask != NULL && (*mask == '\0' || strcmp(mask, "*") == 0))
 		mask = NULL;
 
+	if (servertag != NULL) server = server_find_tag(servertag);
 	ignore_servertag = servertag != NULL && strcmp(servertag, "*") == 0;
+
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
 		IGNORE_REC *rec = tmp->data;
 
 		if (!ignore_servertag) {
+			/*
 			if ((servertag == NULL && rec->servertag != NULL) ||
 			    (servertag != NULL && rec->servertag == NULL))
 				continue;
 
 			if (servertag != NULL && g_strcasecmp(servertag, rec->servertag) != 0)
 				continue;
+			*/
+			if (!ignore_match_server(rec, server)) continue;
 		}
 
 		if ((rec->mask == NULL && mask != NULL) ||
