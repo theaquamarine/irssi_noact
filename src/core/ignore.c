@@ -212,55 +212,18 @@ IGNORE_REC *ignore_find_nick(const char *servertag, const char *mask,
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
 		IGNORE_REC *rec = tmp->data;
 
-		if (!ignore_servertag) {
-			/*
-			if ((servertag == NULL && rec->servertag != NULL) ||
-			    (servertag != NULL && rec->servertag == NULL))
-				continue;
-
-			if (servertag != NULL && g_strcasecmp(servertag, rec->servertag) != 0)
-				continue;
-			*/
+		if (!ignore_servertag)
+		{
 			if (!ignore_match_server(rec, server)) continue;
 		}
 
-		/*
-		if ((rec->mask == NULL && mask != NULL) ||
-		    (rec->mask != NULL && mask == NULL)) continue;
-
-		if (rec->mask != NULL && g_strcasecmp(rec->mask, mask) != 0)
-			continue;
-		*/
 		if (!ignore_match_nickmask(rec, nick, mask)) continue;
 
-        /*if ((channels == NULL && rec->channels == NULL))
-            return rec; /* no channels - ok */
-
-        /*if (channels != NULL && strcmp(*channels, "*") == 0)
-            return rec; /* ignore channels */
-
-        /*if (channels == NULL || rec->channels == NULL)
-            continue; /* other doesn't have channels */
-
-        /*if (strarray_length(channels) != strarray_length(rec->channels))
-            continue; /* different amount of channels */
-
-        /* check that channels match */
-        /*for (chan = channels; *chan != NULL; chan++) {
-            if (strarray_find(rec->channels, *chan) == -1)
-                                break;
-        }
-
-        if (*chan == NULL)
-            return rec; /* channels ok */
-
         chanmatch = FALSE;
-
         for (chan = channels; *chan != NULL; chan++)
         {
             if(ignore_match_channel(rec, *chan)) chanmatch = TRUE;
         }
-
         if (!chanmatch) continue;
 
         /* still here? guess that's a match. */
