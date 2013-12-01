@@ -199,8 +199,10 @@ IGNORE_REC *ignore_find_nick(const char *servertag, const char *mask,
 	GSList *tmp;
 	char **chan;
 	int ignore_servertag;
+	const char *nick;
 	SERVER_REC *server;
 
+	if (mask != NULL) nick = g_strsplit(mask, "!", 2)[0];
 	if (mask != NULL && (*mask == '\0' || strcmp(mask, "*") == 0))
 		mask = NULL;
 
@@ -222,11 +224,14 @@ IGNORE_REC *ignore_find_nick(const char *servertag, const char *mask,
 			if (!ignore_match_server(rec, server)) continue;
 		}
 
+		/*
 		if ((rec->mask == NULL && mask != NULL) ||
 		    (rec->mask != NULL && mask == NULL)) continue;
 
 		if (rec->mask != NULL && g_strcasecmp(rec->mask, mask) != 0)
 			continue;
+		*/
+		if (!ignore_match_nickmask(rec, nick, mask)) continue;
 
 		if ((channels == NULL && rec->channels == NULL))
 			return rec; /* no channels - ok */
