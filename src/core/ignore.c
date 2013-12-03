@@ -202,9 +202,12 @@ IGNORE_REC *ignore_find_nick(const char *servertag, const char *mask,
 	const char *nick;
 	SERVER_REC *server;
 
-	if (mask != NULL) nick = g_strsplit(mask, "!", 2)[0];
-	if (mask != NULL && (*mask == '\0' || strcmp(mask, "*") == 0))
-		mask = NULL;
+	if (mask != NULL)
+	{
+		nick = g_strsplit(mask, "!", 2)[0];
+		if (*mask == '\0' || strcmp(mask, "*") == 0) mask = NULL;
+		/* ignore_match_nick() supports wildcards so maybe not needed? */
+	}
 
 	if (servertag != NULL) server = server_find_tag(servertag);
 	ignore_servertag = servertag != NULL && strcmp(servertag, "*") == 0;
@@ -225,6 +228,8 @@ IGNORE_REC *ignore_find_nick(const char *servertag, const char *mask,
             if(ignore_match_channel(rec, *chan)) chanmatch = TRUE;
         }
         if (!chanmatch) continue;
+
+        if (!ignore_match_pattern(rec, msg)) continue;
 
         /* still here? guess that's a match. */
         return rec;
