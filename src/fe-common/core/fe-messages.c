@@ -192,7 +192,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 		level |= MSGLEVEL_HILIGHT;
 
 	ignore = ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC);
-	if (ignore && ignore->print_noact) level = MSGLEVEL_NO_ACT;
+	if (ignore && ignore->print_noact) level |= MSGLEVEL_NO_ACT;
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
