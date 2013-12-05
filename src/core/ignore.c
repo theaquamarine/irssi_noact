@@ -62,12 +62,12 @@ static int ignore_check_replies_rec(IGNORE_REC *rec, CHANNEL_REC *channel,
 	((rec)->channels == NULL || ((channel) != NULL && \
 		strarray_find((rec)->channels, (channel)) != -1))
 
-static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
+static IGNORE_REC *ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
 {
 	GSList *tmp;
 
 	if (text == NULL || chanrec == NULL)
-		return FALSE;
+		return NULL;
 
         /* check reply ignores */
 	for (tmp = ignores; tmp != NULL; tmp = tmp->next) {
@@ -76,10 +76,10 @@ static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text)
 		if (rec->mask != NULL && rec->replies &&
 		    ignore_match_channel(rec, chanrec->name) &&
 		    ignore_check_replies_rec(rec, chanrec, text))
-			return TRUE;
+			return rec;
 	}
 
-	return FALSE;
+	return NULL;
 }
 
 static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
