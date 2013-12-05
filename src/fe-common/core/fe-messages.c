@@ -62,9 +62,9 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 
 		bgn = str->str + pos;
 
-		if (*bgn == '*') 
+		if (*bgn == '*')
 			type = 2; /* bold */
-		else if (*bgn == '_') 
+		else if (*bgn == '_')
 			type = 31; /* underlined */
 		else
 			continue;
@@ -84,7 +84,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 			   use emphasis on them. */
 			int found;
                         char c;
-			char *end2; 
+			char *end2;
 
 			/* check if _foo_ is a nick */
 			c = end[1];
@@ -92,7 +92,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
                         found = nicklist_find(CHANNEL(item), bgn) != NULL;
 			end[1] = c;
 			if (found) continue;
-			
+
 			/* check if the whole 'word' (e.g. "_foo_^") is a nick
 			   in "_foo_^ ", end will be the second _, end2 the ^ */
 			end2 = end;
@@ -167,6 +167,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	int for_me, print_channel, level;
 	char *nickmode, *color, *freemsg = NULL;
 	HILIGHT_REC *hilight;
+	IGNORE_REC *ignore;
 
 	/* NOTE: this may return NULL if some channel is just closed with
 	   /WINDOW CLOSE and server still sends the few last messages */
@@ -189,6 +190,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	level = MSGLEVEL_PUBLIC;
 	if (for_me)
 		level |= MSGLEVEL_HILIGHT;
+
+	ignore = ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC);
+	if (ignore && ignore->print_noact) level = MSGLEVEL_NO_ACT;
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
@@ -223,7 +227,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 				    for_me ? TXT_PUBMSG_ME_CHANNEL :
 				    TXT_PUBMSG_CHANNEL,
 				    printnick, target, msg, nickmode);
-	}						
+	}
 
 	g_free_not_null(nickmode);
 	g_free_not_null(freemsg);
