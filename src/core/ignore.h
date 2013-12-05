@@ -29,7 +29,7 @@ struct _IGNORE_REC {
 
 extern GSList *ignores;
 
-int ignore_check(SERVER_REC *server, const char *nick, const char *host,
+IGNORE_REC *ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level);
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels);

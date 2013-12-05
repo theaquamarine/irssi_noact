@@ -117,7 +117,7 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 	((rec)->servertag == NULL || \
 	g_strcasecmp((server)->tag, (rec)->servertag) == 0)
 
-int ignore_check(SERVER_REC *server, const char *nick, const char *host,
+IGNORE_REC *ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level)
 {
 	CHANNEL_REC *chanrec;
@@ -127,7 +127,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
         char *nickmask;
         int len, best_mask, best_match, best_patt;
 
-	g_return_val_if_fail(server != NULL, 0);
+	g_return_val_if_fail(server != NULL, NULL);
         if (nick == NULL) nick = "";
 
 	chanrec = server == NULL || channel == NULL ? NULL :
@@ -174,7 +174,10 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
         g_free(nickmask);
 
 	if (best_match || (level & MSGLEVEL_PUBLIC) == 0)
+		return rec;
+		/*
 		return best_match;
+		*/
 
         return ignore_check_replies(chanrec, text);
 }
