@@ -28,8 +28,17 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *address,
 			       const char *target)
 {
+	IGNORE_REC *rec = ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC);
+	if (rec)
+	{
+		if (rec->print_noact) ;
+		else signal_stop();
+	}
+
+	/*
 	if (ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC))
 		signal_stop();
+	*/
 }
 
 static void sig_message_private(SERVER_REC *server, const char *msg,
