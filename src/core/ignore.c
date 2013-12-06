@@ -122,7 +122,7 @@ IGNORE_REC *ignore_check(SERVER_REC *server, const char *nick, const char *host,
 {
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
-        IGNORE_REC *rec;
+    IGNORE_REC *rec = NULL;
 	GSList *tmp;
         char *nickmask;
         int len, best_mask, best_match, best_patt;
