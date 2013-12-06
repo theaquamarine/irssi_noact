@@ -29,91 +29,79 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *target)
 {
 	IGNORE_REC *rec = ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC);
-	if (rec)
-	{
-		if (rec->print_noact) ;
-		else signal_stop();
-	}
-
-	/*
-	if (ignore_check(server, nick, address, target, msg, MSGLEVEL_PUBLIC))
-		signal_stop();
-	*/
+	if (rec && !rec->print_noact) signal_stop();
 }
 
 static void sig_message_private(SERVER_REC *server, const char *msg,
 				const char *nick, const char *address)
 {
-	if (ignore_check(server, nick, address, NULL, msg, MSGLEVEL_MSGS))
-		signal_stop();
+	IGNORE_REC *rec = ignore_check(server, nick, address, NULL, msg, MSGLEVEL_MSGS);
+	if (rec && !rec->print_noact) signal_stop();
 }
 
 static void sig_message_join(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address)
 {
-	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_JOINS))
-		signal_stop();
+	IGNORE_REC *rec = ignore_check(server, nick, address, channel, NULL, MSGLEVEL_JOINS);
+	if (rec && !rec->print_noact) signal_stop();
 }
 
 static void sig_message_part(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address,
 			     const char *reason)
 {
-	if (ignore_check(server, nick, address, channel, NULL, MSGLEVEL_PARTS))
-		signal_stop();
+	IGNORE_REC *rec = ignore_check(server, nick, address, channel, NULL, MSGLEVEL_PARTS);
+	if (rec && !rec->print_noact) signal_stop();
 }
 
 static void sig_message_quit(SERVER_REC *server, const char *nick,
 			     const char *address, const char *reason)
 {
-	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
-		signal_stop();
+	IGNORE_REC *rec = ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS);
+	if (rec && !rec->print_noact) signal_stop();
 }
 
 static void sig_message_kick(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *kicker,
 			     const char *address, const char *reason)
 {
-        /* never ignore if you were kicked */
-	if (g_strcasecmp(nick, server->nick) != 0 &&
-	    ignore_check(server, kicker, address,
-			 channel, reason, MSGLEVEL_KICKS))
-		signal_stop();
+    /* never ignore if you were kicked */
+	IGNORE_REC *rec = ignore_check(server, kicker, address, channel, reason, MSGLEVEL_KICKS);
+	if (g_strcasecmp(nick, server->nick) != 0 && rec && !rec->print_noact) signal_stop();
 }
 
 static void sig_message_nick(SERVER_REC *server, const char *newnick,
 			     const char *oldnick, const char *address)
 {
-	if (ignore_check(server, oldnick, address,
-			 NULL, NULL, MSGLEVEL_NICKS) ||
-	    ignore_check(server, newnick, address,
-			 NULL, NULL, MSGLEVEL_NICKS))
-		signal_stop();
+	IGNORE_REC *old = ignore_check(server, oldnick, address, NULL, NULL, MSGLEVEL_NICKS);
+	IGNORE_REC *new = ignore_check(server, newnick, address, NULL, NULL, MSGLEVEL_NICKS);
+	if (old && !old->print_noact) signal_stop();
+	if (new && !new->print_noact) signal_stop();
 }
 
 static void sig_message_own_nick(SERVER_REC *server, const char *newnick,
 				 const char *oldnick, const char *address)
 {
-	if (ignore_check(server, oldnick, address, NULL, NULL, MSGLEVEL_NICKS))
-		signal_stop();
+	IGNORE_REC *rec = ignore_check(server, oldnick, address, NULL, NULL, MSGLEVEL_NICKS);
+	if (rec && !rec->print_noact) signal_stop();
 }
 
 static void sig_message_invite(SERVER_REC *server, const char *channel,
 			       const char *nick, const char *address)
 {
-	if (*channel == '\0' ||
-	    ignore_check(server, nick, address,
-			 channel, NULL, MSGLEVEL_INVITES))
-		signal_stop();
+	IGNORE_REC *rec = ignore_check(server, nick, address, channel, NULL, MSGLEVEL_INVITES);
+	if (*channel == '\0' || rec)
+	{
+		if (!rec->print_noact) signal_stop();
+	}
 }
 
 static void sig_message_topic(SERVER_REC *server, const char *channel,
 			      const char *topic,
 			      const char *nick, const char *address)
 {
-	if (ignore_check(server, nick, address,
-			 channel, topic, MSGLEVEL_TOPICS))
-		signal_stop();
+	IGNORE_REC *rec = ignore_check(server, nick, address, channel, topic, MSGLEVEL_TOPICS);
+	if (rec && !rec->print_noact) signal_stop();
 }
 
 void fe_ignore_messages_init(void)
