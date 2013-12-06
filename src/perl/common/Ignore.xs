@@ -12,7 +12,7 @@ PPCODE:
 		XPUSHs(sv_2mortal(plain_bless(tmp->data, "Irssi::Ignore")));
 	}
 
-int
+Irssi::Ignore
 ignore_check(nick, host, channel, text, level)
 	char *nick
 	char *host
@@ -28,7 +28,7 @@ OUTPUT:
 MODULE = Irssi::Ignore  PACKAGE = Irssi::Server
 #*******************************
 
-int
+Irssi::Ignore
 ignore_check(server, nick, host, channel, text, level)
 	Irssi::Server server
 	char *nick
