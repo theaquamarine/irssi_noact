@@ -13,6 +13,8 @@ sudo apt-get install -y screen
 
 echo "alias update='cp -r /vagrant ~/irssi'" >> /home/vagrant/.bashrc
 echo "alias remake='make && sudo make install && irssi'" >> /home/vagrant/.bashrc
+echo "alias logmake='update && ./autogen.sh && echo \"Starting make...\" && make &> makelog.txt && echo \"make complete\"'" >> /home/vagrant/.bashrc
+echo "alias logcheck='cat makelog.txt | grep -E \"error|warning\" | grep -v \"\-Wunused-value\" | grep -v \"\-Wdeprecated-declarations\"'" >> /home/vagrant/.bashrc
 
 #set up irssi
 echo 'chatnets = { ubanto = { type = "IRC"; }; };' > /home/vagrant/.irssi/config

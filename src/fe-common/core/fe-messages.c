@@ -239,13 +239,18 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 {
 	QUERY_REC *query;
         char *freemsg = NULL;
+    IGNORE_REC *ignore  = NULL;
+    int level = MSGLEVEL_MSGS;
 
 	query = query_find(server, nick);
+
+	ignore = ignore_check(server, nick, address, NULL, msg, MSGLEVEL_MSGS);
+	if (ignore && ignore->print_noact) level |= MSGLEVEL_NO_ACT;
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
 
-	printformat(server, nick, MSGLEVEL_MSGS,
+	printformat(server, nick, level,
 		    query == NULL ? TXT_MSG_PRIVATE :
 		    TXT_MSG_PRIVATE_QUERY, nick, address, msg);
 
@@ -329,16 +334,22 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 static void sig_message_join(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address)
 {
-	printformat(server, channel, MSGLEVEL_JOINS,
-		    TXT_JOIN, nick, address, channel);
+	int level = MSGLEVEL_JOINS;
+	IGNORE_REC *ignore;
+	ignore = ignore_check(server, nick, address, channel, NULL, MSGLEVEL_JOINS);
+	if (ignore && ignore->print_noact) level |= MSGLEVEL_NO_ACT;
+	printformat(server, channel, level, TXT_JOIN, nick, address, channel);
 }
 
 static void sig_message_part(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address,
 			     const char *reason)
 {
-	printformat(server, channel, MSGLEVEL_PARTS,
-		    TXT_PART, nick, address, channel, reason);
+	int level = MSGLEVEL_PARTS;
+	IGNORE_REC *ignore;
+	ignore = ignore_check(server, nick, address, channel, NULL, MSGLEVEL_PARTS);
+	if (ignore && ignore->print_noact) level |= MSGLEVEL_NO_ACT;
+	printformat(server, channel, level, TXT_PART, nick, address, channel, reason);
 }
 
 static void sig_message_quit(SERVER_REC *server, const char *nick,
@@ -349,9 +360,15 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	GSList *tmp, *windows;
 	char *print_channel;
 	int once, count;
+	int level = MSGLEVEL_QUITS;
+	IGNORE_REC *ignore;
 
-	if (ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS))
-		return;
+	ignore = ignore_check(server, nick, address, NULL, reason, MSGLEVEL_QUITS);
+	if (ignore)
+	{
+		if (ignore->print_noact) level |= MSGLEVEL_NO_ACT;
+		else return;
+	}
 
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
@@ -360,12 +377,13 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	chans = g_string_new(NULL);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
+		IGNORE_REC *ignore = ignore_check(server, nick, address, rec->visible_name,
+				 reason, MSGLEVEL_QUITS);
 
 		if (!nicklist_find(rec, nick))
 			continue;
 
-		if (ignore_check(server, nick, address, rec->visible_name,
-				 reason, MSGLEVEL_QUITS)) {
+		if (ignore && !ignore->print_noact) {
 			count++;
 			continue;
 		}
@@ -380,8 +398,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_append(windows, window);
-				printformat(server, rec->visible_name,
-					    MSGLEVEL_QUITS,
+				printformat(server, rec->visible_name, level,
 					    TXT_QUIT, nick, address, reason,
 					    rec->visible_name);
 			}
@@ -395,7 +412,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 		   display the quit there too */
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
-			printformat(server, nick, MSGLEVEL_QUITS,
+			printformat(server, nick, level,
 				    TXT_QUIT, nick, address, reason, "");
 		}
 	}
@@ -403,7 +420,7 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	if (once || count == 0) {
 		if (chans->len > 0)
 			g_string_truncate(chans, chans->len-1);
-		printformat(server, print_channel, MSGLEVEL_QUITS,
+		printformat(server, print_channel, level,
 			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
 			    nick, address, reason, chans->str);
 	}
@@ -414,7 +431,10 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *kicker,
 			     const char *address, const char *reason)
 {
-	printformat(server, channel, MSGLEVEL_KICKS,
+	int level = MSGLEVEL_KICKS;
+	IGNORE_REC *ignore = ignore_check(server, kicker, address, channel, reason, MSGLEVEL_KICKS);
+	if (ignore && ignore->print_noact) level |= MSGLEVEL_NO_ACT;
+	printformat(server, channel, level,
 		    TXT_KICK, nick, channel, kicker, reason, address);
 }
 
@@ -423,14 +443,17 @@ static void print_nick_change_channel(SERVER_REC *server, const char *channel,
 				      const char *address,
 				      int ownnick)
 {
-	int level;
+	int level = MSGLEVEL_NICKS;
+	IGNORE_REC *rec = ignore_check(server, oldnick, address,
+			 channel, newnick, MSGLEVEL_NICKS);
 
-	if (ignore_check(server, oldnick, address,
-			 channel, newnick, MSGLEVEL_NICKS))
-		return;
+	if (rec)
+	{
+		if (rec->print_noact && !ownnick) level |= MSGLEVEL_NO_ACT;
+		else return;
+	}
 
-	level = MSGLEVEL_NICKS;
-        if (ownnick) level |= MSGLEVEL_NO_ACT;
+    if (ownnick) level |= MSGLEVEL_NO_ACT;
 
 	printformat(server, channel, level,
 		    ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
@@ -495,9 +518,12 @@ static void sig_message_invite(SERVER_REC *server, const char *channel,
 			       const char *nick, const char *address)
 {
 	char *str;
+	int level = MSGLEVEL_INVITES;
+	IGNORE_REC *rec = ignore_check(server, nick, address, channel, NULL, MSGLEVEL_INVITES);
+	if (rec && rec->print_noact) level |= MSGLEVEL_NO_ACT;
 
 	str = show_lowascii(channel);
-	printformat(server, NULL, MSGLEVEL_INVITES,
+	printformat(server, NULL, level,
 		    TXT_INVITE, nick, str, address);
 	g_free(str);
 }
@@ -506,7 +532,10 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 			      const char *topic,
 			      const char *nick, const char *address)
 {
-	printformat(server, channel, MSGLEVEL_TOPICS,
+	int level = MSGLEVEL_TOPICS;
+	IGNORE_REC *rec = ignore_check(server, nick, address, channel, topic, MSGLEVEL_TOPICS);
+	if (rec && rec->print_noact) level |= MSGLEVEL_NO_ACT;
+	printformat(server, channel, level,
 		    *topic != '\0' ? TXT_NEW_TOPIC : TXT_TOPIC_UNSET,
 		    nick, channel, topic, address);
 }
